@@ -12,7 +12,11 @@ int main()
 }
 
 
-int checkQaulity()
+int checkQaulity(int numberOfMoves)
 {
+    int qualityNumber;
 
+
+
+    return qualityNumber;
 }
