@@ -1,12 +1,5 @@
 Dane wejsciowe:
-- Wybor mapy
-- Pola ktore wypelnia w trakcie rozwiazywania lamiglowki
-
-numer jednej z kilkunastu predefiniowanych map
-wysokosc mapy
-szerokosc mapy
-tablica wypelnienia mapy
-
+- Pusta mapa 
 
 Dane wyjsciowe:
-- w ilu ruchach rozwiazl lamiglowke
+- Ile błędów zostało popełnionych w porównaniu do odpowiedzi
