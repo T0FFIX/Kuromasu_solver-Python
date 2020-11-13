@@ -6,6 +6,104 @@ mapsFolder = "maps/"  # folder with maps to read from
 mapsAnswersFolder = "maps_answers/"  # folder with answers
 
 
+# Each number on the board represents the number of white cells that can be seen from that cell, including itself.
+# A cell can be seen from another cell if they are in the same row or column,
+# and there are no black cells between them in that row or column.
+def checkNumberOfWhiteCells(board, width, height):
+    error = False
+    for i in range(0, len(board)):
+        if board[i] != 1 and board[i] != 0:
+            count = 1  # it automaticaly countes itself
+            iterator = 1
+            while i % width + iterator < width and board[i + iterator] != 1:  # check right
+                count += 1
+                iterator += 1
+
+            while i + width*iterator < width * height and board[i + width*iterator] != 1:  # check down
+                count += 1
+                iterator += 1
+
+            while i % width - iterator < width and board[i - iterator] != 1:  # check left
+                count += 1
+                iterator += 1
+
+            while i - width*iterator < width * height and board[i - width*iterator] != 1:  # check up
+                count += 1
+                iterator += 1
+
+            if board[i] != count:
+                error = True
+                break
+    return error
+
+
+# No two black cells may be horizontally or vertically adjacent.
+def checkAdjustment(board, width):  # two black squares cannot be near themself
+    error = False
+    for i in range(0, len(board)):
+        if board[i] == 1:  # check self if on black cell
+            if board[i+1] is not None and board[i+1] == 1:  # check right
+                error = True
+                break
+            elif board[i+1] is not None and board[i+width] == 1:  # check down
+                error = True
+                break
+            elif board[i+1] is not None and board[i-1] == 1:  # check left
+                error = True
+                break
+            elif board[i+1] is not None and board[i-width] == 1:  # check up
+                error = True
+                break
+    return error
+
+
+# All the white cells must be connected horizontally or vertically.
+def checkConectivity(board, width):  # checkes whether all white blocks are connected
+    error = False
+    for i in range(0, len(board)):
+        if board[i] == 0:
+            counter = 0
+
+            # check right
+            if board[i + 1] is None:
+                counter += 1
+            else:
+                if board[i + 1] == 1:
+                    counter += 1
+
+            # check down
+            if board[i + width] is None:
+                counter += 1
+            else:
+                if board[i + width] == 1:
+                    counter += 1
+
+            # check left
+            if board[i - 1] is None:
+                counter += 1
+            else:
+                if board[i - 1] == 1:
+                    counter += 1
+
+            # check up
+            if board[i - width] is None:
+                counter += 1
+            else:
+                if board[i - width] == 1:
+                    counter += 1
+
+            if counter == 4:
+                error = True
+
+    return error
+
+
+def checkRules(board, width, height):  # todo to bedzie w check quality
+    if checkAdjustment(board, width) is False or checkConectivity(board, width) is False or \
+            checkNumberOfWhiteCells(board, width, height) is False:
+        return False
+
+
 def extractMap(mapName):
     file = open(mapName, "r")
     data = file.read()  # read whole file to string
@@ -32,12 +130,19 @@ def checkQuality(actualBoard, answerBoard):
     return qualityScore
 
 
-def generateRandomSolution(playerBoard): #playerBoard => cleanBoard
-    for i in range(0, len(playerBoard)):
-        if playerBoard[i] == str(0):
-            playerBoard[i] = str(random.randint(0, 1))
+def generateRandomSolution(actualBoard, answerBoard):  # playerBoard => cleanBoard
+    for i in range(0, len(actualBoard)):
+        if actualBoard[i] == str(0):
+            actualBoard[i] = str(random.randint(0, 1))
 
-    return playerBoard
+    errors = checkQuality(actualBoard, answerBoard)
+    while errors != 0:
+        for i in range(0, len(actualBoard)):
+            if actualBoard[i] == str(0):
+                actualBoard[i] = str(random.randint(0, 1))
+        print(errors)
+
+    return actualBoard
 
 
 def printSolution(cleanBoard, actualBoard, height, width):
@@ -105,6 +210,16 @@ def bruteForce(cleanBoard, actualAnswerBoard):
             return actualBoard
 
 
+    for i in range(0, 2 ** size):
+        record = str(bin(i))
+        record = appendWithZeros(record[2:], size)
+        checkRules(record, width, height)
+        if checkQuality(record) == 0:
+            return record
+
+
+
+
 def main():
     filename = "1.txt"
     mapOutput = "output.txt"
@@ -115,9 +230,10 @@ def main():
         mapOutput = sys.argv[2]
 
     mapName = mapsFolder + filename
-
     cleanBoard = extractMap(mapName)  # empty map
     actualAnswerBoard = extractMap(mapAnswersName)
+
+    # generateRandomSolution(cleanBoard, actualAnswerBoard)
 
     start_time = time.time()  # when alghoritm stats working
     correctBoard = bruteForce(cleanBoard, actualAnswerBoard)
