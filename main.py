@@ -3,105 +3,105 @@ import time
 import sys
 
 mapsFolder = "maps/"  # folder with maps to read from
-mapsAnswersFolder = "maps_answers/"  # folder with answers
 
 
-# Each number on the board represents the number of white cells that can be seen from that cell, including itself.
-# A cell can be seen from another cell if they are in the same row or column,
-# and there are no black cells between them in that row or column.
-def checkNumberOfWhiteCells(board, width, height):
-    error = False
+def checkQuality(board, width, height):
+    error = 0
     for i in range(0, len(board)):
+        # Rule 1: Each number on the board represents the number of white cells that can be seen from that cell,
+        # including itself. A cell can be seen from another cell if they are in the same row or column, and there
+        # are no black cells between them in that row or column.
         if board[i] != 1 and board[i] != 0:
-            count = 1  # it automaticaly countes itself
-            iterator = 1
-            while i % width + iterator < width and board[i + iterator] != 1:  # check right
-                count += 1
-                iterator += 1
+            count = 0  # it automaticaly countes itself
+            iterator = 0
+            # i = 0
+            #0,0,0,0,3,0,2,0,0,3,0,4,0,0,0,0 ///4
 
-            while i + width*iterator < width * height and board[i + width*iterator] != 1:  # check down
-                count += 1
-                iterator += 1
-
-            while i % width - iterator < width and board[i - iterator] != 1:  # check left
-                count += 1
-                iterator += 1
-
-            while i - width*iterator < width * height and board[i - width*iterator] != 1:  # check up
-                count += 1
-                iterator += 1
-
+            # check right
+            while True:
+                if i % width + iterator < width and board[i + iterator] != 1:
+                    count += 1
+                    iterator += 1
+                else:
+                    break
+            iterator = 0
+            # check down
+            while True:
+                if i + width*iterator < width * height and board[i + width*iterator] != 1:
+                    count += 1
+                    iterator += 1
+                else:
+                    break
+            iterator = 0
+            # check left
+            while True:
+                # if i-iterator >= 0:  # todo TO ZMIENIONE INNE OD RESZTY
+                if i % width - iterator < width and i - iterator >= 0 and board[i - iterator] != 1:
+                    count += 1
+                    iterator += 1
+                else:
+                    break
+            iterator = 0
+            # check up
+            while True:
+                if i - width*iterator < width * height and i - width*iterator >= 0 and board[i - width*iterator] != 1:
+                    count += 1
+                    iterator += 1
+                else:
+                    break
+            count = count - 3
             if board[i] != count:
-                error = True
+                error += 1
                 break
-    return error
 
-
-# No two black cells may be horizontally or vertically adjacent.
-def checkAdjustment(board, width):  # two black squares cannot be near themself
-    error = False
-    for i in range(0, len(board)):
-        if board[i] == 1:  # check self if on black cell
+        # Rule 2: No two black cells may be horizontally or vertically adjacent.
+        elif board[i] == 1:  # check self if on black cell
             if board[i+1] is not None and board[i+1] == 1:  # check right
-                error = True
+                error += 1
                 break
             elif board[i+1] is not None and board[i+width] == 1:  # check down
-                error = True
+                error += 1
                 break
             elif board[i+1] is not None and board[i-1] == 1:  # check left
-                error = True
+                error += 1
                 break
             elif board[i+1] is not None and board[i-width] == 1:  # check up
-                error = True
+                error += 1
                 break
-    return error
 
-
-# All the white cells must be connected horizontally or vertically.
-def checkConectivity(board, width):  # checkes whether all white blocks are connected
-    error = False
-    for i in range(0, len(board)):
-        if board[i] == 0:
+        # Rule 3: All the white cells must be connected horizontally or vertically.
+        elif board[i] == 0:
             counter = 0
 
             # check right
             if board[i + 1] is None:
                 counter += 1
-            else:
-                if board[i + 1] == 1:
-                    counter += 1
+            elif board[i + 1] == 1:
+                counter += 1
 
             # check down
             if board[i + width] is None:
                 counter += 1
-            else:
-                if board[i + width] == 1:
-                    counter += 1
+            elif board[i + width] == 1:
+                counter += 1
 
             # check left
             if board[i - 1] is None:
                 counter += 1
-            else:
-                if board[i - 1] == 1:
-                    counter += 1
+            elif board[i - 1] == 1:
+                counter += 1
 
             # check up
             if board[i - width] is None:
                 counter += 1
-            else:
-                if board[i - width] == 1:
-                    counter += 1
+            elif board[i - width] == 1:
+                counter += 1
 
             if counter == 4:
-                error = True
+                error += 1
 
+    # Return number of errors
     return error
-
-
-def checkRules(board, width, height):  # todo to bedzie w check quality
-    if checkAdjustment(board, width) is False or checkConectivity(board, width) is False or \
-            checkNumberOfWhiteCells(board, width, height) is False:
-        return False
 
 
 def extractMap(mapName):
@@ -121,31 +121,18 @@ def extractMap(mapName):
     return arr
 
 
-def checkQuality(actualBoard, answerBoard):
-    qualityScore = 0
-    for i in range(0, len(actualBoard)):
-        if actualBoard[i] != answerBoard[i]:
-            qualityScore += 1
-
-    return qualityScore
-
-
-def generateRandomSolution(actualBoard, answerBoard):  # playerBoard => cleanBoard
-    for i in range(0, len(actualBoard)):
-        if actualBoard[i] == str(0):
-            actualBoard[i] = str(random.randint(0, 1))
-
-    errors = checkQuality(actualBoard, answerBoard)
+def generateRandomSolution(board, width, height):  # playerBoard => cleanBoard
+    errors = checkQuality(board, width, height)
     while errors != 0:
-        for i in range(0, len(actualBoard)):
-            if actualBoard[i] == str(0):
-                actualBoard[i] = str(random.randint(0, 1))
-        print(errors)
+        for i in range(0, len(board)):
+            if board[i] == str(0):  # TODO przekonwertowac wszystkie stringi do numerow w projekcie
+                board[i] = str(random.randint(0, 1))
+        print(errors)  # TODO debug
 
-    return actualBoard
+    return board
 
 
-def printSolution(cleanBoard, actualBoard, height, width):
+def printSolution(cleanBoard, actualBoard, height, width):  # todo fancy feature, poprawic na 2d
     print("Input: ")
     for el in cleanBoard:
         print(el + " ", end="")
@@ -184,46 +171,30 @@ def appendWithZeros(element, size):
     return list(new)
 
 
-# size is number of white squares on map
-def getBinaryPermutations(size):
-    collection = []
-    for i in range(0, 2 ** size):
-        record = str(bin(i))
-        collection.append(appendWithZeros(record[2:], size))
-
-    return collection
-
-
-def insertNumbers(cleanBoard, answerBoard):
+def insertNumbers(board, cleanBoard):
     for i in range(len(cleanBoard)):
         if int(cleanBoard[i]) >= 2:
-            answerBoard[i] = cleanBoard[i]
+            board[i] = cleanBoard[i]
+    return board
 
 
-def bruteForce(cleanBoard, actualAnswerBoard):
-    size = len(cleanBoard)
-    answerBoard = getBinaryPermutations(size)
+def bruteForce(cleanBoard, width, height):
+    for i in range(0, 2 ** len(cleanBoard)):
+        board = []
+        generated = str(bin(i))
+        generated = appendWithZeros(generated[2:], len(cleanBoard))
 
-    for actualBoard in answerBoard:
-        insertNumbers(cleanBoard, actualBoard)
-        if checkQuality(actualBoard, actualAnswerBoard) == 0:
-            return actualBoard
+        for letter in generated:
+            board.append(int(letter))  # todo jak nie zadziala daj extend zamiast append
+        board = insertNumbers(board, cleanBoard)
 
-
-    for i in range(0, 2 ** size):
-        record = str(bin(i))
-        record = appendWithZeros(record[2:], size)
-        checkRules(record, width, height)
-        if checkQuality(record) == 0:
-            return record
-
-
+        if checkQuality(board, width, height) == 0:
+            return board
 
 
 def main():
     filename = "1.txt"
     mapOutput = "output.txt"
-    mapAnswersName = mapsAnswersFolder + filename
 
     if len(sys.argv) >= 2:
         filename = sys.argv[1]
@@ -231,17 +202,16 @@ def main():
 
     mapName = mapsFolder + filename
     cleanBoard = extractMap(mapName)  # empty map
-    actualAnswerBoard = extractMap(mapAnswersName)
-
-    # generateRandomSolution(cleanBoard, actualAnswerBoard)
+    width = getMapSizes(mapName)[0]
+    height = getMapSizes(mapName)[1]
 
     start_time = time.time()  # when alghoritm stats working
-    correctBoard = bruteForce(cleanBoard, actualAnswerBoard)
+    # correctBoard = generateRandomSolution(cleanBoard, width, height)
+    correctBoard = bruteForce(cleanBoard, width, height)
     work_time = time.time() - start_time
 
     print("Elapsed alghoritm work time: " + str(work_time))
-    mapSizes = getMapSizes(mapName)
-    printSolution(cleanBoard, correctBoard, mapSizes[0], mapSizes[1])
+    printSolution(cleanBoard, correctBoard, width, height)
     saveSolution(correctBoard, mapOutput)
 
 
