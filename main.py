@@ -126,6 +126,10 @@ def checkQuality(board, width, height):
 
             if counter == 4:
                 error += 1
+
+
+        # print("err: " + str(error) +" ",end ="")
+        # print("i: "+ str(i))
     # Return number of errors
     # print(error)
     return error
@@ -161,17 +165,6 @@ def getMapSizes(mapName):
     return arr
 
 
-def generateRandomSolution(board, width, height):  # playerBoard => cleanBoard
-    usedBoard = board.copy()
-    errors = checkQuality(usedBoard, width, height)
-    while errors != 0:
-        for i in range(0, len(usedBoard)):
-            if usedBoard[i] == 0 or usedBoard[i] == 1:
-                usedBoard[i] = random.randint(0, 1)
-        errors = checkQuality(usedBoard, width, height)
-    return usedBoard
-
-
 def printSolution(cleanBoard, correctBoard, width, height):
     print("Input: ")
     for k in range(0, height):
@@ -184,6 +177,7 @@ def printSolution(cleanBoard, correctBoard, width, height):
         for i in range(0, width):
             print(str(correctBoard[k * width + i]) + " ", end="")
         print("")
+
 
 def saveSolution(cleanBoard, correctBoard, width, height, work_time, mapOutput):
     file = open(mapOutput, "w")
@@ -235,6 +229,53 @@ def bruteForce(cleanBoard, width, height):  # TODO zepsute, naprawic
             return board
 
 
+def generateRandomSolution(board, width, height):  # playerBoard => cleanBoard
+    errors = checkQuality(board, width, height)
+    while errors != 0:
+        for i in range(0, len(board)):
+            if board[i] == 0 or board[i] == 1:
+                board[i] = random.randint(0, 1)
+        errors = checkQuality(board, width, height)
+    return board
+
+
+def generateClimbingSolution(board, width, height):
+    errors = checkQuality(board, width, height)
+    bestboard = board.copy()
+    while errors != 0:
+        for i in range(0, len(board)):
+            if board[i] == 0 or board[i] == 1:
+                board[i] = random.randint(0, 1)
+        errors_of_board = checkQuality(board, width, height)
+        errors_of_best_board = checkQuality(bestboard, width, height)
+        if errors_of_board < errors_of_best_board:
+            errors = errors_of_board
+            bestboard = board.copy()
+    return bestboard
+
+
+def generateTabuSolution(board, width, height):
+    tabuList = []
+    bestboard = board.copy()
+
+    errors = checkQuality(board, width, height)
+    tabuList.append(board)
+    while errors != 0:
+        for i in range(0, len(board)):
+            if board[i] == 0 or board[i] == 1:
+                board[i] = random.randint(0, 1)
+
+        errors_of_board = checkQuality(board, width, height)
+        if errors_of_board <= errors and not tabuList.__contains__(board):
+            errors = errors_of_board
+            tabuList.append(board)
+            bestboard = board.copy()
+
+
+
+    return board
+
+
 def main():
     filename = "1.txt"
     mapOutput = "output.txt"
@@ -245,18 +286,26 @@ def main():
 
     mapName = mapsFolder + filename
     cleanBoard = extractMap(mapName)  # empty map
+    board = cleanBoard.copy()  # map we operate on
     width = getMapSizes(mapName)[0]
     height = getMapSizes(mapName)[1]
 
     start_time = time.time()  # when alghoritm stats working
-    correctBoard = generateRandomSolution(cleanBoard, width, height)
-    # correctBoard = bruteForce(cleanBoard, width, height)
-
+    correctBoard = generateRandomSolution(board, width, height)
+    # correctBoard = bruteForce(board, width, height)
+    # correctBoard = generateClimbingSolution(board, width, height)
     work_time = time.time() - start_time
+    board = cleanBoard.copy()
+    start_time = time.time()  # when alghoritm stats working
+    # correctBoard1 = generateRandomSolution(board, width, height)
+    # correctBoard1 = bruteForce(board, width, height)
+    correctBoard1 = generateClimbingSolution(board, width, height)
+    work_time2 = time.time() - start_time
 
     printSolution(cleanBoard, correctBoard, width, height)
     print()
-    print("Elapsed alghoritm work time: " + str(work_time))
+    print("Elapsed alghoritm work time generateRandomSolution : " + str(work_time))
+    print("Elapsed alghoritm work time generateClimbingSolution: " + str(work_time2))
 
     saveSolution(cleanBoard, correctBoard, width, height, work_time, mapOutput)
 
