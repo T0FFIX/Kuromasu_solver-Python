@@ -215,7 +215,7 @@ def insertNumbers(board, cleanBoard):
     return board
 
 
-def bruteForce(cleanBoard, width, height):  # TODO zepsute, naprawic
+def bruteForce(cleanBoard, width, height):
     for i in range(0, 2 ** len(cleanBoard)):
         board = []
         generated = str(bin(i))
@@ -229,7 +229,7 @@ def bruteForce(cleanBoard, width, height):  # TODO zepsute, naprawic
             return board
 
 
-def generateRandomSolution(board, width, height):  # playerBoard => cleanBoard
+def generateRandomSolution(board, width, height):
     errors = checkQuality(board, width, height)
     while errors != 0:
         for i in range(0, len(board)):
