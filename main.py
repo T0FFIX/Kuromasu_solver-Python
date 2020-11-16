@@ -270,9 +270,6 @@ def generateTabuSolution(board, width, height):
             errors = errors_of_board
             tabuList.append(board)
             bestboard = board.copy()
-
-
-
     return board
 
 
@@ -298,14 +295,14 @@ def main():
     board = cleanBoard.copy()
     start_time = time.time()  # when alghoritm stats working
     # correctBoard1 = generateRandomSolution(board, width, height)
-    # correctBoard1 = bruteForce(board, width, height)
-    correctBoard1 = generateClimbingSolution(board, width, height)
+    correctBoard1 = bruteForce(board, width, height)
+    # correctBoard1 = generateClimbingSolution(board, width, height)
     work_time2 = time.time() - start_time
 
     printSolution(cleanBoard, correctBoard, width, height)
     print()
     print("Elapsed alghoritm work time generateRandomSolution : " + str(work_time))
-    print("Elapsed alghoritm work time generateClimbingSolution: " + str(work_time2))
+    print("Elapsed alghoritm work time generateRandomSolution : " + str(work_time2))
 
     saveSolution(cleanBoard, correctBoard, width, height, work_time, mapOutput)
 
