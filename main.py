@@ -1,3 +1,4 @@
+import visuals
 import random
 import time
 import sys
@@ -239,37 +240,68 @@ def generateRandomSolution(board, width, height):
     return board
 
 
+def randomiseMap(board):
+    for i in range(0, len(board)):
+        if board[i] == 0 or board[i] == 1:
+            board[i] = random.randint(0, 1)
+    return board
+
+
+# returns best neighbour
+def generateNeighbor(board, width, height):
+    cleanBoard = board.copy()
+    best_neighbour = []
+    quality = 99  # error indicator
+    for i in range(0, len(board)):
+        if board[i] == 0:
+            board[i] = 1
+            if quality > checkQuality(board, width, height):
+                best_neighbour = board.copy()
+        elif board[i] == 1:
+            board[i] = 0
+            if quality > checkQuality(board, width, height):
+                best_neighbour = board.copy()
+        board = cleanBoard.copy()
+    return best_neighbour
+
+
 def generateClimbingSolution(board, width, height):
     errors = checkQuality(board, width, height)
-    bestboard = board.copy()
     while errors != 0:
-        for i in range(0, len(board)):
-            if board[i] == 0 or board[i] == 1:
-                board[i] = random.randint(0, 1)
-        errors_of_board = checkQuality(board, width, height)
-        errors_of_best_board = checkQuality(bestboard, width, height)
-        if errors_of_board < errors_of_best_board:
-            errors = errors_of_board
-            bestboard = board.copy()
-    return bestboard
+        best_neighbour = generateNeighbor(board, width, height)
+        neighbour_quality = checkQuality(best_neighbour, width, height)
+        if neighbour_quality < errors:
+            errors = neighbour_quality
+            board = best_neighbour.copy()
+        elif neighbour_quality >= errors:
+            break
+    return board
 
 
 def generateTabuSolution(board, width, height):
-    tabuList = []
-    bestboard = board.copy()
-
+    tabu_list = [board]
     errors = checkQuality(board, width, height)
-    tabuList.append(board)
     while errors != 0:
+        cleanBoard = board.copy()
+        best_neighbour = []
+        quality = 99  # error indicator
         for i in range(0, len(board)):
-            if board[i] == 0 or board[i] == 1:
-                board[i] = random.randint(0, 1)
+            if board[i] == 0:
+                board[i] = 1
+                if quality > checkQuality(board, width, height) and not tabu_list.__contains__(board):
+                    best_neighbour = board.copy()
+            elif board[i] == 1:
+                board[i] = 0
+                if quality > checkQuality(board, width, height) and not tabu_list.__contains__(board):
+                    best_neighbour = board.copy()
+            board = cleanBoard.copy()
 
-        errors_of_board = checkQuality(board, width, height)
-        if errors_of_board <= errors and not tabuList.__contains__(board):
-            errors = errors_of_board
-            tabuList.append(board)
-            bestboard = board.copy()
+        if not best_neighbour:  # if best_neighbour is empty -> all neighbours are tabu
+            return board
+        tabu_list.append(best_neighbour)
+        board = best_neighbour.copy()
+        errors = checkQuality(board, width, height)
+
     return board
 
 
@@ -305,7 +337,8 @@ def main():
     print("Elapsed alghoritm work time generateRandomSolution : " + str(work_time2))
 
     saveSolution(cleanBoard, correctBoard, width, height, work_time, mapOutput)
-
+    # visuals.printFancyMap(cleanBoard, correctBoard, width, height)
+    print(generateTabuSolution(board, width, height))
 
 if __name__ == "__main__":
     main()
