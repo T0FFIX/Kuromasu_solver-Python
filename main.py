@@ -127,12 +127,6 @@ def checkQuality(board, width, height):
 
             if counter == 4:
                 error += 1
-
-
-        # print("err: " + str(error) +" ",end ="")
-        # print("i: "+ str(i))
-    # Return number of errors
-    # print(error)
     return error
 
 
@@ -240,40 +234,36 @@ def generateRandomSolution(board, width, height):
     return board
 
 
-def randomiseMap(board):
+def randomiseMap(board, width, height):
     for i in range(0, len(board)):
         if board[i] == 0 or board[i] == 1:
             board[i] = random.randint(0, 1)
     return board
 
 
-# returns best neighbour
-def generateNeighbor(board, width, height):
-    cleanBoard = board.copy()
-    best_neighbour = []
-    quality = 99  # error indicator
-    for i in range(0, len(board)):
-        if board[i] == 0:
-            board[i] = 1
-            if quality > checkQuality(board, width, height):
-                best_neighbour = board.copy()
-        elif board[i] == 1:
-            board[i] = 0
-            if quality > checkQuality(board, width, height):
-                best_neighbour = board.copy()
-        board = cleanBoard.copy()
-    return best_neighbour
-
-
 def generateClimbingSolution(board, width, height):
     errors = checkQuality(board, width, height)
     while errors != 0:
-        best_neighbour = generateNeighbor(board, width, height)
+        cleanBoard = board.copy()
+        best_neighbour = []
+        quality = 99  # error indicator
+        for i in range(0, len(board)):
+            if board[i] == 0:
+                board[i] = 1
+                if quality > checkQuality(board, width, height):
+                    best_neighbour = board.copy()
+            elif board[i] == 1:
+                board[i] = 0
+                if quality > checkQuality(board, width, height):
+                    best_neighbour = board.copy()
+            board = cleanBoard.copy()
         neighbour_quality = checkQuality(best_neighbour, width, height)
         if neighbour_quality < errors:
             errors = neighbour_quality
             board = best_neighbour.copy()
         elif neighbour_quality >= errors:
+            board = best_neighbour.copy()
+            print("ERROR: The algorithm is stuck and the last solution has so many errors: " + str(errors))
             break
     return board
 
@@ -306,7 +296,7 @@ def generateTabuSolution(board, width, height):
 
 
 def main():
-    filename = "1.txt"
+    filename = "2.txt"
     mapOutput = "output.txt"
 
     if len(sys.argv) >= 2:
@@ -320,25 +310,40 @@ def main():
     height = getMapSizes(mapName)[1]
 
     start_time = time.time()  # when alghoritm stats working
-    correctBoard = generateRandomSolution(board, width, height)
-    # correctBoard = bruteForce(board, width, height)
-    # correctBoard = generateClimbingSolution(board, width, height)
+    correctBoard = bruteForce(board, width, height)
     work_time = time.time() - start_time
     board = cleanBoard.copy()
-    start_time = time.time()  # when alghoritm stats working
-    # correctBoard1 = generateRandomSolution(board, width, height)
-    correctBoard1 = bruteForce(board, width, height)
-    # correctBoard1 = generateClimbingSolution(board, width, height)
-    work_time2 = time.time() - start_time
 
     printSolution(cleanBoard, correctBoard, width, height)
     print()
-    print("Elapsed alghoritm work time generateRandomSolution : " + str(work_time))
-    print("Elapsed alghoritm work time generateRandomSolution : " + str(work_time2))
+    print("Elapsed alghoritm work time bruteForce : " + str(work_time))
+    print()
 
     saveSolution(cleanBoard, correctBoard, width, height, work_time, mapOutput)
     # visuals.printFancyMap(cleanBoard, correctBoard, width, height)
-    print(generateTabuSolution(board, width, height))
+
+    print("Brute Force :")
+    print(correctBoard)  #bruteforce
+
+    print("Random Guess Solution :")
+    board = cleanBoard.copy()  # map we operate on
+    randomGuessSolution = generateRandomSolution(board, width, height)
+    print(randomGuessSolution)
+
+    print("Tabu Solution :")
+    board = cleanBoard.copy()  # map we operate on
+    tabuSolution = generateTabuSolution(board, width, height)
+    print(tabuSolution)
+
+    print("Climbing Solution :")
+    board = cleanBoard.copy()  # map we operate on
+    climbingSolution = generateClimbingSolution(board, width, height)
+    print(climbingSolution)
+
+    print("Random ONE Guess :")
+    board = cleanBoard.copy()  # map we operate on
+    print(randomiseMap(board, width, height))
+
 
 if __name__ == "__main__":
     main()
