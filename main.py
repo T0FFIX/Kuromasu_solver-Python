@@ -366,7 +366,7 @@ def sortByQuality(population, width, height):
     return population
 
 
-def generateGeneticSolution(board, width, height, population_size, best_population_percentage, generations_number):
+def generateGeneticSolution(board, width, height, population_size, best_population_percentage, generations_number, mutation_chance):
     population = generatePopulation(board, population_size)     #population of answers for the starting population
     repopulate_number = population_size - round(population_size * best_population_percentage)   #how many answers we need to generate to repopulate
     best_population_number = round(population_size * best_population_percentage)    #how many best answers we want
@@ -395,6 +395,20 @@ def generateGeneticSolution(board, width, height, population_size, best_populati
             offspring = dna_first_half[random_choice_first_half].copy()
             offspring.extend(dna_second_half[random_choice_second_half].copy())
             new_generation.append(offspring)
+
+        for i in range(0, round(repopulate_number*mutation_chance)):
+            mutated_offspring = random.randrange(0, len(new_generation))
+            mutation = new_generation[mutated_offspring]
+            mutated_position = random.randrange(0, len(mutation))
+
+            while mutation[mutated_position] > 1:
+                mutated_position = random.randrange(0, len(mutation))
+
+            # switches from 0 to 1 and from 1 to 0
+            if mutation[mutated_position] == 0:
+                mutation[mutated_position] = 1
+            else:
+                mutation[mutated_position] = 0
 
         for el in best:
             new_generation.append(el)
@@ -514,9 +528,9 @@ def main():
     height = getMapSizes(mapName)[1]
 
     start_time = time.time()  # when alghoritm stats working
-    correctBoard = bruteForce(board, width, height)
+    # correctBoard = bruteForce(board, width, height)
     # correctBoard = generateSimmannealingSolution(board, width, height)
-    # correctBoard = generateGeneticSolution(board, width, height, population_size=40, best_population_percentage=0.25, generations_number=1000)
+    correctBoard = generateGeneticSolution(board, width, height, population_size=40, best_population_percentage=0.25, generations_number=1000, mutation_chance=0.1)
     work_time = time.time() - start_time
     board = cleanBoard.copy()
 
