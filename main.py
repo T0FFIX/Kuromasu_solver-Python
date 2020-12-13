@@ -2,6 +2,7 @@ import visuals
 import random
 import time
 import sys
+import math
 
 mapsFolder = "maps/"  # folder with maps to read from
 
@@ -295,9 +296,212 @@ def generateTabuSolution(board, width, height):
     return board
 
 
+def generateSimmannealingSolution(board, width, height):
+    temperature_start = 120
+    temperature_lowest = 0
+    temperature_drop = 0.01
+
+    starting_board = board.copy()
+
+    current_temp = temperature_start
+    board = board.copy()
+    all_neighbors = []
+
+    for i in range(0, 2 ** len(starting_board)):
+        temp_board = []
+        generated = str(bin(i))
+        generated = appendWithZeros(generated[2:], len(starting_board))
+
+        for letter in generated:
+            temp_board.append(int(letter))
+
+        temp_board = insertNumbers(temp_board, starting_board)
+        all_neighbors.append(temp_board)
+
+    while current_temp > temperature_lowest:
+        neighbor = random.choice(all_neighbors)
+        cost_diff = checkQuality(board, width, height) - checkQuality(neighbor, width, height)
+
+        if checkQuality(board, width, height) == 0:
+            return board
+
+        if cost_diff > 0:
+            board = neighbor.copy()
+        elif random.uniform(0, 1) < math.exp(cost_diff / current_temp):
+            board = neighbor.copy()
+        current_temp -= temperature_drop
+    print("ERROR: The algorithm is stuck and the last solution is: ")
+    errors = checkQuality(board, width, height)
+    print("Errors number: " + str(errors))
+    return board
+
+
+def generatePopulation(board, population_size):
+    #generates a random but unique population of answers
+    population = []
+    clean_board = board.copy()
+    for j in range(0, population_size):
+        for i in range(0, len(board)):
+            if board[i] == 0 or board[i] == 1:
+                board[i] = random.randint(0, 1)
+        if not population.__contains__(board):
+            population.append(board)
+        board = clean_board.copy()
+
+    return population
+
+
+def sortByQuality(population, width, height):
+    #sorts population by how many errors it hase and returns it
+    population_qualities = []
+    for el in population:
+        dict_el = [el, checkQuality(el, width, height)]
+        population_qualities.append(dict_el)
+
+    population_qualities = sorted(population_qualities, key=lambda x: x[1], reverse=False)
+
+    population = []
+    for el in population_qualities:
+        population.append(el[0])
+    return population
+
+
+def generateGeneticSolution(board, width, height, population_size, best_population_percentage, generations_number):
+    population = generatePopulation(board, population_size)     #population of answers for the starting population
+    repopulate_number = population_size - round(population_size * best_population_percentage)   #how many answers we need to generate to repopulate
+    best_population_number = round(population_size * best_population_percentage)    #how many best answers we want
+
+    # check starting population for an answer
+    for el in population:
+        if checkQuality(el, width, height) == 0:
+            return el
+
+    for k in range(0, generations_number):
+        sorted_population = sortByQuality(population, width, height)
+        best = sorted_population[0:best_population_number]
+        random_crossing_position = random.randrange(0, len(best)-1)
+
+        dna_first_half = []
+        dna_second_half = []
+        for el in best:
+            dna_first_half.append(el[0:random_crossing_position])
+            dna_second_half.append(el[random_crossing_position:])
+
+        new_generation = []
+        for i in range(0, repopulate_number):
+            random_choice_first_half = random.randrange(0, best_population_number)
+            random_choice_second_half = random.randrange(0, best_population_number)
+
+            offspring = dna_first_half[random_choice_first_half].copy()
+            offspring.extend(dna_second_half[random_choice_second_half].copy())
+            new_generation.append(offspring)
+
+        for el in best:
+            new_generation.append(el)
+
+        population = new_generation.copy()
+
+        # check last generation for an answer
+        for el in population:
+            if checkQuality(el, width, height) == 0:
+                return el
+
+    # even if we have no answer, return best possible from last generation
+    population = sortByQuality(population, width, height)
+    print("ERROR: The algorithm is stuck and the last solution from the last generation is: ")
+    errors = checkQuality(population[0], width, height)
+    print("Errors number: " + str(errors))
+    return population[0]
+
+
+def test_bruteForce(testOutput, board, width, height):
+    file = open(testOutput, "w")
+    file.close()
+    file = open(testOutput, "a")
+    file.write("Brute Force Solution Time: " + "\n")
+    file.close()
+    number = 0
+    cleanboard = board.copy()
+    whole_time = time.time()  # when alghoritm stats working
+    while number < 25:
+        single_try = time.time()  # when alghoritm stats working
+        correctBoard = bruteForce(board, width, height)
+        single_try_time = time.time() - single_try
+        number += 1
+        board = cleanboard
+        file = open(testOutput, "a")
+        file.write("Time " + str(number)+ ": " + str(single_try_time)+"\n")
+        file.close()
+
+    brute_force_time = time.time() - whole_time
+    file = open(testOutput, "a")
+    file.write("Brute Force Whole Time: " + str(brute_force_time)+"\n")
+    # file.write("Answer: "+str(correctBoard))
+    file.write("\n")
+    file.close()
+    return 0
+
+
+def test_generateClimbingSolution(testOutput, board, width, height):
+    file = open(testOutput, "a")
+    file.write("\n")
+    file.write("\n")
+    file.write("Climbing Solution Time: "+"\n")
+    file.close()
+    number = 0
+    cleanboard = board.copy()
+    whole_time = time.time()  # when alghoritm stats working
+    while number < 25:
+        single_try = time.time()  # when alghoritm stats working
+        correctBoard = generateClimbingSolution(board, width, height)
+        single_try_time = time.time() - single_try
+        number += 1
+        board = cleanboard
+        file = open(testOutput, "a")
+        file.write("Time " + str(number) + ": " + str(single_try_time) + "\n")
+        file.close()
+
+    climbing_time = time.time() - whole_time
+    file = open(testOutput, "a")
+    file.write("Climbing Whole Time: " + str(climbing_time) + "\n")
+    # file.write("Answer: " + str(correctBoard))
+    file.write("\n")
+    file.close()
+    return 0
+
+
+def test_generateTabuSolution(testOutput, board, width, height):
+    file = open(testOutput, "a")
+    file.write("\n")
+    file.write("\n")
+    file.write("Tabu Solution Time: "+"\n")
+    file.close()
+    number = 0
+    cleanboard = board.copy()
+    whole_time = time.time()  # when alghoritm stats working
+    while number < 25:
+        single_try = time.time()  # when alghoritm stats working
+        correctBoard = generateTabuSolution(board, width, height)
+        single_try_time = time.time() - single_try
+        number += 1
+        board = cleanboard
+        file = open(testOutput, "a")
+        file.write("Time " + str(number) + ": " + str(single_try_time) + "\n")
+        file.close()
+
+    tabu_time = time.time() - whole_time
+    file = open(testOutput, "a")
+    file.write("Tabu Whole Time: " + str(tabu_time) + "\n")
+    # file.write("Answer: " + str(correctBoard))
+    file.write("\n")
+    file.close()
+    return 0
+
+
 def main():
-    filename = "2.txt"
+    filename = "1.txt"
     mapOutput = "output.txt"
+    testOutput = "test_output.txt"
 
     if len(sys.argv) >= 2:
         filename = sys.argv[1]
@@ -311,38 +515,44 @@ def main():
 
     start_time = time.time()  # when alghoritm stats working
     correctBoard = bruteForce(board, width, height)
+    # correctBoard = generateSimmannealingSolution(board, width, height)
+    # correctBoard = generateGeneticSolution(board, width, height, population_size=40, best_population_percentage=0.25, generations_number=1000)
     work_time = time.time() - start_time
     board = cleanBoard.copy()
 
     printSolution(cleanBoard, correctBoard, width, height)
     print()
-    print("Elapsed alghoritm work time bruteForce : " + str(work_time))
+    print("Elapsed alghoritm work time : " + str(work_time))
     print()
 
     saveSolution(cleanBoard, correctBoard, width, height, work_time, mapOutput)
     # visuals.printFancyMap(cleanBoard, correctBoard, width, height)
 
-    print("Brute Force :")
-    print(correctBoard)  #bruteforce
-
-    print("Random Guess Solution :")
-    board = cleanBoard.copy()  # map we operate on
-    randomGuessSolution = generateRandomSolution(board, width, height)
-    print(randomGuessSolution)
-
-    print("Tabu Solution :")
-    board = cleanBoard.copy()  # map we operate on
-    tabuSolution = generateTabuSolution(board, width, height)
-    print(tabuSolution)
-
-    print("Climbing Solution :")
-    board = cleanBoard.copy()  # map we operate on
-    climbingSolution = generateClimbingSolution(board, width, height)
-    print(climbingSolution)
-
-    print("Random ONE Guess :")
-    board = cleanBoard.copy()  # map we operate on
-    print(randomiseMap(board, width, height))
+    # print("Brute Force :")
+    # print(correctBoard)  #bruteforce
+    #
+    # print("Random Guess Solution :")
+    # board = cleanBoard.copy()  # map we operate on
+    # randomGuessSolution = generateRandomSolution(board, width, height)
+    # print(randomGuessSolution)
+    #
+    # print("Tabu Solution :")
+    # board = cleanBoard.copy()  # map we operate on
+    # tabuSolution = generateTabuSolution(board, width, height)
+    # print(tabuSolution)
+    #
+    # print("Climbing Solution :")
+    # board = cleanBoard.copy()  # map we operate on
+    # climbingSolution = generateClimbingSolution(board, width, height)
+    # print(climbingSolution)
+    #
+    # print("Random ONE Guess :")
+    # board = cleanBoard.copy()  # map we operate on
+    # print(randomiseMap(board, width, height))
+    # TESTING
+    # test_bruteForce(testOutput, board, width, height)
+    # test_generateClimbingSolution(testOutput, board, width, height)
+    # test_generateTabuSolution(testOutput, board, width, height)
 
 
 if __name__ == "__main__":
