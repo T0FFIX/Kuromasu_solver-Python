@@ -297,28 +297,24 @@ def generateTabuSolution(board, width, height):
 
 
 def generateSimmannealingSolution(board, width, height):
-    temperature_start = 120
-    temperature_lowest = 0
-    temperature_drop = 0.01
+    temperature_formula = lambda temp: 1 / iterations
+    iterations = 10000
+    temperature = 120
 
-    starting_board = board.copy()
-
-    current_temp = temperature_start
     board = board.copy()
     all_neighbors = []
 
-    for i in range(0, 2 ** len(starting_board)):
-        temp_board = []
-        generated = str(bin(i))
-        generated = appendWithZeros(generated[2:], len(starting_board))
+    for k in range(0, iterations):
+        for i in range(0, len(board)):
+            local_board = board.copy()
+            if local_board[i] == 0:
+                local_board[i] = 1
+            elif local_board[i] == 1:
+                local_board[i] = 0
+            else:
+                continue
+            all_neighbors.append(local_board)
 
-        for letter in generated:
-            temp_board.append(int(letter))
-
-        temp_board = insertNumbers(temp_board, starting_board)
-        all_neighbors.append(temp_board)
-
-    while current_temp > temperature_lowest:
         neighbor = random.choice(all_neighbors)
         cost_diff = checkQuality(board, width, height) - checkQuality(neighbor, width, height)
 
@@ -327,9 +323,10 @@ def generateSimmannealingSolution(board, width, height):
 
         if cost_diff > 0:
             board = neighbor.copy()
-        elif random.uniform(0, 1) < math.exp(cost_diff / current_temp):
+        elif random.uniform(0, 1) < math.exp(cost_diff / temperature):
             board = neighbor.copy()
-        current_temp -= temperature_drop
+        temperature = temperature_formula(temperature)
+
     print("ERROR: The algorithm is stuck and the last solution is: ")
     errors = checkQuality(board, width, height)
     print("Errors number: " + str(errors))
@@ -379,6 +376,13 @@ def generateGeneticSolution(board, width, height, population_size, best_populati
     for k in range(0, generations_number):
         sorted_population = sortByQuality(population, width, height)
         best = sorted_population[0:best_population_number]
+
+        # replace the worst of best population with one of the rest
+        worse_element_pass_chance = random.randrange(0, 100)
+        if worse_element_pass_chance < 1:
+            newOccurrence = random.randrange(best_population_number, len(sorted_population))
+            best[len(best)-1] = sorted_population[newOccurrence]
+
         random_crossing_position = random.randrange(0, len(best)-1)
 
         dna_first_half = []
