@@ -258,12 +258,45 @@ def generateClimbingSolution(board, width, height):
                 if quality > checkQuality(board, width, height):
                     best_neighbour = board.copy()
             board = cleanBoard.copy()
+            quality = checkQuality(board , width, height)
         neighbour_quality = checkQuality(best_neighbour, width, height)
         if neighbour_quality < errors:
             errors = neighbour_quality
             board = best_neighbour.copy()
         elif neighbour_quality >= errors:
             board = best_neighbour.copy()
+            print("ERROR: The algorithm is stuck and the last solution has so many errors: " + str(errors))
+            break
+    return board
+
+
+def generateClimbingSolutionv2(board, width, height):
+    errors = checkQuality(board, width, height)
+    while errors != 0:
+        cleanBoard = board.copy()
+        best_neighbour = []
+        quality = 99  # error indicator
+        for i in range(0, len(board)):
+            if board[i] == 0:
+                board[i] = 1
+                if quality > checkQuality(board, width, height):
+                    best_neighbour.append(board)
+            elif board[i] == 1:
+                board[i] = 0
+                if quality > checkQuality(board, width, height):
+                    best_neighbour.append(board)
+            board = cleanBoard.copy()
+        sorted_neighbours = []
+        for i in range(0, len(best_neighbour)):
+            sorted_neighbours = sortByQuality(best_neighbour, width, height)
+
+        neighbour_quality = checkQuality(sorted_neighbours[0], width, height)
+
+        if neighbour_quality < errors:
+            errors = neighbour_quality
+            board = sorted_neighbours[0].copy()
+        elif neighbour_quality >= errors:
+            board = sorted_neighbours[0].copy()
             print("ERROR: The algorithm is stuck and the last solution has so many errors: " + str(errors))
             break
     return board
@@ -288,11 +321,13 @@ def generateTabuSolution(board, width, height):
             board = cleanBoard.copy()
 
         if not best_neighbour:  # if best_neighbour is empty -> all neighbours are tabu
+            print("ERROR: The algorithm is stuck and the last solution is: ")
+            errors = checkQuality(board, width, height)
+            print("Errors number: " + str(errors))
             return board
         tabu_list.append(best_neighbour)
         board = best_neighbour.copy()
         errors = checkQuality(board, width, height)
-
     return board
 
 
@@ -365,8 +400,7 @@ def sortByQuality(population, width, height):
 
 def generateGeneticSolution(board, width, height, population_size, best_population_percentage, generations_number, mutation_chance):
     population = generatePopulation(board, population_size)     #population of answers for the starting population
-    repopulate_number = population_size - round(population_size * best_population_percentage)   #how many answers we need to generate to repopulate
-    best_population_number = round(population_size * best_population_percentage)    #how many best answers we want
+    repopulate_number = population_size - best_population_percentage   #how many answers we need to generate to repopulate
 
     # check starting population for an answer
     for el in population:
@@ -374,14 +408,25 @@ def generateGeneticSolution(board, width, height, population_size, best_populati
             return el
 
     for k in range(0, generations_number):
-        sorted_population = sortByQuality(population, width, height)
-        best = sorted_population[0:best_population_number]
+        best_population_percentage_groups = []
+        for m in range(best_population_percentage):
+            single_group = []
+            for n in range(population_size//best_population_percentage):
+                pick_random_one = random.randrange(0,len(population))
+                single_group.append(population[pick_random_one])
+            best_population_percentage_groups.append(single_group)
 
-        # replace the worst of best population with one of the rest
-        worse_element_pass_chance = random.randrange(0, 100)
-        if worse_element_pass_chance < 1:
-            newOccurrence = random.randrange(best_population_number, len(sorted_population))
-            best[len(best)-1] = sorted_population[newOccurrence]
+        best = []
+        for m in range(best_population_percentage):
+            local_best_quality = 999  # error indicator
+            local_best = []
+            for n in range(population_size//best_population_percentage):
+                groups_one_instance = best_population_percentage_groups[m][n]
+                groups_one_instance_quality = checkQuality(groups_one_instance, width, height)
+                if groups_one_instance_quality < local_best_quality:
+                    local_best = groups_one_instance
+                    local_best_quality = groups_one_instance_quality
+            best.append(local_best)
 
         random_crossing_position = random.randrange(0, len(best)-1)
 
@@ -393,8 +438,8 @@ def generateGeneticSolution(board, width, height, population_size, best_populati
 
         new_generation = []
         for i in range(0, repopulate_number):
-            random_choice_first_half = random.randrange(0, best_population_number)
-            random_choice_second_half = random.randrange(0, best_population_number)
+            random_choice_first_half = random.randrange(0, len(best))
+            random_choice_second_half = random.randrange(0, len(best))
 
             offspring = dna_first_half[random_choice_first_half].copy()
             offspring.extend(dna_second_half[random_choice_second_half].copy())
@@ -517,7 +562,7 @@ def test_generateTabuSolution(testOutput, board, width, height):
 
 
 def main():
-    filename = "1.txt"
+    filename = "9.txt"
     mapOutput = "output.txt"
     testOutput = "test_output.txt"
 
@@ -533,8 +578,12 @@ def main():
 
     start_time = time.time()  # when alghoritm stats working
     # correctBoard = bruteForce(board, width, height)
+    # correctBoard = generateClimbingSolution(board, width, height)
+    # correctBoard = generateClimbingSolutionv2(board, width, height)
+    # correctBoard = generateTabuSolution(board, width, height)
+    # correctBoard =  generateRandomSolution(board, width, height)
     # correctBoard = generateSimmannealingSolution(board, width, height)
-    correctBoard = generateGeneticSolution(board, width, height, population_size=40, best_population_percentage=0.25, generations_number=1000, mutation_chance=0.1)
+    correctBoard = generateGeneticSolution(board, width, height, population_size=100, best_population_percentage=10, generations_number=10000, mutation_chance=5)
     work_time = time.time() - start_time
     board = cleanBoard.copy()
 
@@ -544,7 +593,7 @@ def main():
     print()
 
     saveSolution(cleanBoard, correctBoard, width, height, work_time, mapOutput)
-    # visuals.printFancyMap(cleanBoard, correctBoard, width, height)
+    visuals.print_visuals(cleanBoard, correctBoard, width, height)
 
     # print("Brute Force :")
     # print(correctBoard)  #bruteforce
