@@ -14,10 +14,10 @@ def checkQuality(board, width, height):
         # including itself. A cell can be seen from another cell if they are in the same row or column, and there
         # are no black cells between them in that row or column.
         if board[i] != 1 and board[i] != 0:
-            count = 0  # it automaticaly countes itself
+            count = 1  # number of white cells, it automaticaly countes itself at start
             iterator = 0
-            # check right
-            # WORKING
+
+            # Check right side
             while True:
                 try:
                     iterator += 1
@@ -27,10 +27,10 @@ def checkQuality(board, width, height):
                         break
                 except IndexError:
                     break
+            # Reset
             iterator = 0
 
-            # check down
-            #WORKING
+            # Check down side
             while True:
                 try:
                     iterator += 1
@@ -40,10 +40,10 @@ def checkQuality(board, width, height):
                         break
                 except IndexError:
                     break
+            # Reset
             iterator = 0
 
-            # check left
-            # WORKING
+            # Check left side
             while True:
                 try:
                     iterator += 1
@@ -53,10 +53,10 @@ def checkQuality(board, width, height):
                         break
                 except IndexError:
                     break
+            # Reset
             iterator = 0
 
-            # check up
-            #WORKING
+            # Check up side
             while True:
                 try:
                     iterator += 1
@@ -66,67 +66,70 @@ def checkQuality(board, width, height):
                         break
                 except IndexError:
                     break
-
-            count = count + 1
+            # Check if the number inside the cell is equal to count if not its an error
             if board[i] != count:
                 error += 1
-                # break
 
         # Rule 2: No two black cells may be horizontally or vertically adjacent.
         elif board[i] == 1:  # check self if on black cell
             try:
-                if (i % width) + 1 < width and board[i + 1] == 1:  # check right
+                if (i % width) + 1 < width and board[i + 1] == 1:  # check right side
                     error += 1
 
-                elif i + width < width * height and board[i + width] == 1:  # check down
+                elif i + width < width * height and board[i + width] == 1:  # check down side
                     error += 1
 
-                elif (i % width) - 1 > 0 and board[i - 1] == 1: # check left
+                elif (i % width) - 1 > 0 and board[i - 1] == 1:  # check left side
                     error += 1
 
-                elif i - width > 0 and board[i - width] == 1:  # check up
+                elif i - width > 0 and board[i - width] == 1:  # check up side
                     error += 1
 
+            #TODO opisać co tu się dzieje i czemu jest ten print
             except IndexError:
-                print("", end="")
+                # print("", end="")
+                pass
 
         # Rule 3: All the white cells must be connected horizontally or vertically.
         elif board[i] == 0:
-            counter = 0
+            # Reset to reuse this variable
+            count = 0
+
+            #TODO nie rozumiem jak to działa
 
             try:
-                if board[i + 1] == 1:  # check right
-                    counter += 1
+                if board[i + 1] == 1:  # check right side
+                    count += 1
                 elif (i % width) + 1 > width:
-                    counter += 1
+                    count += 1
             except IndexError:
-                counter += 1
+                count += 1
 
             try:
-                if board[i + width] == 1:  # check down
-                    counter += 1
+                if board[i + width] == 1:  # check down side
+                    count += 1
                 elif i + width > width * height:
-                    counter += 1
+                    count += 1
             except IndexError:
-                counter += 1
+                count += 1
 
             try:
-                if board[i - 1] == 1: # check left
-                    counter += 1
+                if board[i - 1] == 1:  # check left side
+                    count += 1
                 elif (i % width) - 1 < 0:
-                    counter += 1
+                    count += 1
             except IndexError:
-                counter += 1
+                count += 1
 
             try:
-                if board[i - width] == 1:  # check up
-                    counter += 1
+                if board[i - width] == 1:  # check up side
+                    count += 1
                 elif i - width < 0:
-                    counter += 1
+                    count += 1
             except IndexError:
-                counter += 1
+                count += 1
 
-            if counter == 4:
+            if count == 4:
                 error += 1
     return error
 
@@ -247,7 +250,7 @@ def generateClimbingSolution(board, width, height):
     while errors != 0:
         cleanBoard = board.copy()
         best_neighbour = []
-        quality = 99  # error indicator
+        quality = 99  # error.txt indicator
         for i in range(0, len(board)):
             if board[i] == 0:
                 board[i] = 1
@@ -275,7 +278,7 @@ def generateClimbingSolutionv2(board, width, height):
     while errors != 0:
         cleanBoard = board.copy()
         best_neighbour = []
-        quality = 99  # error indicator
+        quality = 99  # error.txt indicator
         for i in range(0, len(board)):
             if board[i] == 0:
                 board[i] = 1
@@ -308,7 +311,7 @@ def generateTabuSolution(board, width, height):
     while errors != 0:
         cleanBoard = board.copy()
         best_neighbour = []
-        quality = 99  # error indicator
+        quality = 99  # error.txt indicator
         for i in range(0, len(board)):
             if board[i] == 0:
                 board[i] = 1
@@ -369,7 +372,7 @@ def generateSimmannealingSolution(board, width, height):
 
 
 def generatePopulation(board, population_size):
-    #generates a random but unique population of answers
+    #   generates a random but unique population of answers
     population = []
     clean_board = board.copy()
     for j in range(0, population_size):
@@ -384,7 +387,7 @@ def generatePopulation(board, population_size):
 
 
 def sortByQuality(population, width, height):
-    #sorts population by how many errors it hase and returns it
+    #   sorts population by how many errors it hase and returns it
     population_qualities = []
     for el in population:
         dict_el = [el, checkQuality(el, width, height)]
@@ -399,8 +402,8 @@ def sortByQuality(population, width, height):
 
 
 def generateGeneticSolution(board, width, height, population_size, best_population_percentage, generations_number, mutation_chance):
-    population = generatePopulation(board, population_size)     #population of answers for the starting population
-    repopulate_number = population_size - best_population_percentage   #how many answers we need to generate to repopulate
+    population = generatePopulation(board, population_size)  # population of answers for the starting population
+    repopulate_number = population_size - best_population_percentage  # how many answers we need to generate to repopulate
 
     # check starting population for an answer
     for el in population:
@@ -412,7 +415,7 @@ def generateGeneticSolution(board, width, height, population_size, best_populati
         for m in range(best_population_percentage):
             single_group = []
             for n in range(population_size//best_population_percentage):
-                pick_random_one = random.randrange(0,len(population))
+                pick_random_one = random.randrange(0, len(population))
                 single_group.append(population[pick_random_one])
             best_population_percentage_groups.append(single_group)
 
@@ -485,9 +488,9 @@ def test_bruteForce(testOutput, board, width, height):
     file.close()
     number = 0
     cleanboard = board.copy()
-    whole_time = time.time()  # when alghoritm stats working
+    whole_time = time.time()  # when algorithm stats working
     while number < 25:
-        single_try = time.time()  # when alghoritm stats working
+        single_try = time.time()  # when algorithm stats working
         correctBoard = bruteForce(board, width, height)
         single_try_time = time.time() - single_try
         number += 1
@@ -541,9 +544,9 @@ def test_generateTabuSolution(testOutput, board, width, height):
     file.close()
     number = 0
     cleanboard = board.copy()
-    whole_time = time.time()  # when alghoritm stats working
+    whole_time = time.time()  # when algorithm stats working
     while number < 25:
-        single_try = time.time()  # when alghoritm stats working
+        single_try = time.time()  # when algorithm stats working
         correctBoard = generateTabuSolution(board, width, height)
         single_try_time = time.time() - single_try
         number += 1
@@ -562,7 +565,7 @@ def test_generateTabuSolution(testOutput, board, width, height):
 
 
 def main():
-    filename = "9.txt"
+    filename = "1.txt"
     mapOutput = "output.txt"
     testOutput = "test_output.txt"
 
@@ -576,7 +579,7 @@ def main():
     width = getMapSizes(mapName)[0]
     height = getMapSizes(mapName)[1]
 
-    start_time = time.time()  # when alghoritm stats working
+    start_time = time.time()  # when algorithm stats working
     # correctBoard = bruteForce(board, width, height)
     # correctBoard = generateClimbingSolution(board, width, height)
     # correctBoard = generateClimbingSolutionv2(board, width, height)
