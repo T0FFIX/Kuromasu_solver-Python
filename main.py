@@ -6,15 +6,15 @@ import math
 
 mapsFolder = "maps/"  # folder with maps to read from
 
-
+# TODO move this to rules.py
 def checkQuality(board, width, height):
     error = 0
     for i in range(0, len(board)):
         # Rule 1: Each number on the board represents the number of white cells that can be seen from that cell,
         # including itself. A cell can be seen from another cell if they are in the same row or column, and there
         # are no black cells between them in that row or column.
-        if board[i] != 1 and board[i] != 0:
-            count = 1  # number of white cells, it automaticaly countes itself at start
+        if board[i] != 1 and board[i] != 0:  # in this cell is a number
+            count = 1  # number of white cells, it automatically count itself at start
             iterator = 0
 
             # Check right side
@@ -22,11 +22,11 @@ def checkQuality(board, width, height):
                 try:
                     iterator += 1
                     if i % width + iterator < width and board[i + iterator] != 1:
-                        count += 1
+                        count += 1  # the next cell is white
                     elif i % width + iterator >= width or board[i + iterator] == 1:
-                        break
+                        break  # the next cell is not white
                 except IndexError:
-                    break
+                    break  # there is not such cell because its at the edge of the map
             # Reset
             iterator = 0
 
@@ -35,11 +35,11 @@ def checkQuality(board, width, height):
                 try:
                     iterator += 1
                     if i + width * iterator <= width*height and board[i + width * iterator] != 1:
-                        count += 1
+                        count += 1  # the next cell is white
                     elif i + width * iterator > width*height or board[i + width * iterator] == 1:
-                        break
+                        break  # the next cell is not white
                 except IndexError:
-                    break
+                    break  # there is not such cell because its at the edge of the map
             # Reset
             iterator = 0
 
@@ -48,11 +48,11 @@ def checkQuality(board, width, height):
                 try:
                     iterator += 1
                     if i % width - iterator >= 0 and board[i - iterator] != 1:
-                        count += 1
+                        count += 1  # the next cell is white
                     elif i % width - iterator < 0 or board[i - iterator] == 1:
-                        break
+                        break  # the next cell is not white
                 except IndexError:
-                    break
+                    break  # there is not such cell because its at the edge of the map
             # Reset
             iterator = 0
 
@@ -61,11 +61,11 @@ def checkQuality(board, width, height):
                 try:
                     iterator += 1
                     if i - width * iterator >= 0 and board[i - width * iterator] != 1:
-                        count += 1
+                        count += 1  # the next cell is white
                     elif i - width * iterator < 0 or board[i - width * iterator] == 1:
-                        break
+                        break  # the next cell is not white
                 except IndexError:
-                    break
+                    break  # there is not such cell because its at the edge of the map
             # Check if the number inside the cell is equal to count if not its an error
             if board[i] != count:
                 error += 1
@@ -74,79 +74,65 @@ def checkQuality(board, width, height):
         elif board[i] == 1:  # check self if on black cell
             try:
                 if (i % width) + 1 < width and board[i + 1] == 1:  # check right side
-                    error += 1
+                    error += 1  # it is connected, add error
 
                 elif i + width < width * height and board[i + width] == 1:  # check down side
-                    error += 1
+                    error += 1  # it is connected, add error
 
                 elif (i % width) - 1 > 0 and board[i - 1] == 1:  # check left side
-                    error += 1
+                    error += 1  # it is connected, add error
 
                 elif i - width > 0 and board[i - width] == 1:  # check up side
-                    error += 1
-
-            #TODO opisać co tu się dzieje i czemu jest ten print
+                    error += 1  # it is connected, add error
             except IndexError:
-                # print("", end="")
-                pass
+                pass  # if no black cell is connected, continue
 
         # Rule 3: All the white cells must be connected horizontally or vertically.
         elif board[i] == 0:
             # Reset to reuse this variable
             count = 0
 
-            #TODO nie rozumiem jak to działa
-
             try:
                 if board[i + 1] == 1:  # check right side
                     count += 1
-                elif (i % width) + 1 > width:
-                    count += 1
-            except IndexError:
-                count += 1
+            except IndexError:  # there is not such cell because its at the edge of the map
+                count += 1  # so it its blocked from this side
 
             try:
                 if board[i + width] == 1:  # check down side
                     count += 1
-                elif i + width > width * height:
-                    count += 1
-            except IndexError:
-                count += 1
+            except IndexError:  # there is not such cell because its at the edge of the map
+                count += 1  # so it its blocked from this side
 
             try:
                 if board[i - 1] == 1:  # check left side
                     count += 1
-                elif (i % width) - 1 < 0:
-                    count += 1
-            except IndexError:
-                count += 1
+            except IndexError:  # there is not such cell because its at the edge of the map
+                count += 1  # so it its blocked from this side
 
             try:
                 if board[i - width] == 1:  # check up side
                     count += 1
-                elif i - width < 0:
-                    count += 1
-            except IndexError:
-                count += 1
+            except IndexError:  # there is not such cell because its at the edge of the map
+                count += 1  # so it its blocked from this side
 
-            if count == 4:
-                error += 1
+            if count == 4:  # the white cell is surrounded by black cells and/or edges of the map
+                error += 1  # it is not connected to the others, add error
     return error
-
-
+# TODO move this to rules.py
+# TODO move this to auxiliary.py
 def extractMap(mapName):
     file = open(mapName, "r")
     data = file.read()  # read whole file to string
     file.close()
-    temp = data.split(',')  # split data to temoporary 1d array
+    temp = data.split(',')  # split data to temporary 1d array
 
-    height = int(temp[1])
-    width = int(temp[0])
-
+    height = int(temp[0])  # height of the map
+    width = int(temp[1])  # width of the map
     arr = []
-    temp = temp[2:]  # rid off unnessesary width and height
+    temp = temp[2:]  # rid off unnecessary width and height
     for i in range(0, width * height):
-        arr.append(int(temp[i]))
+        arr.append(int(temp[i]))  # place it into a new array
 
     return arr
 
@@ -155,13 +141,13 @@ def getMapSizes(mapName):
     file = open(mapName, "r")
     data = file.read()  # read whole file to string
     file.close()
-    temp = data.split(',')  # split data to temoporary 1d array
+    temp = data.split(',')  # split data to temporary 1d array
 
-    width = int(temp[1])
-    height = int(temp[0])
+    height = int(temp[0])  # pass the height of the map
+    width = int(temp[1])  # pass the width of the map
 
-    arr = [width, height]
-    return arr
+    sizes = [height, width]
+    return sizes
 
 
 def printSolution(cleanBoard, correctBoard, width, height):
@@ -196,7 +182,7 @@ def saveSolution(cleanBoard, correctBoard, width, height, work_time, mapOutput):
     file.write("\n" + "Time:" + "\n")
     file.write(str(work_time))
     file.close()
-
+# TODO move this to auxiliary.py
 
 def appendWithZeros(element, size):
     new = ""
@@ -235,13 +221,6 @@ def generateRandomSolution(board, width, height):
             if board[i] == 0 or board[i] == 1:
                 board[i] = random.randint(0, 1)
         errors = checkQuality(board, width, height)
-    return board
-
-
-def randomiseMap(board, width, height):
-    for i in range(0, len(board)):
-        if board[i] == 0 or board[i] == 1:
-            board[i] = random.randint(0, 1)
     return board
 
 
@@ -334,7 +313,7 @@ def generateTabuSolution(board, width, height):
     return board
 
 
-def generateSimmannealingSolution(board, width, height):
+def generateAnnealingSolution(board, width, height):
     temperature_formula = lambda temp: 1 / iterations
     iterations = 10000
     temperature = 120
@@ -479,7 +458,7 @@ def generateGeneticSolution(board, width, height, population_size, best_populati
     print("Errors number: " + str(errors))
     return population[0]
 
-
+# TODO move this to tests.py
 def test_bruteForce(testOutput, board, width, height):
     file = open(testOutput, "w")
     file.close()
@@ -562,10 +541,10 @@ def test_generateTabuSolution(testOutput, board, width, height):
     file.write("\n")
     file.close()
     return 0
-
+# TODO move this to tests.py
 
 def main():
-    filename = "1.txt"
+    filename = "5.txt"
     mapOutput = "output.txt"
     testOutput = "test_output.txt"
 
@@ -576,8 +555,8 @@ def main():
     mapName = mapsFolder + filename
     cleanBoard = extractMap(mapName)  # empty map
     board = cleanBoard.copy()  # map we operate on
-    width = getMapSizes(mapName)[0]
-    height = getMapSizes(mapName)[1]
+    height = getMapSizes(mapName)[0]
+    width = getMapSizes(mapName)[1]
 
     start_time = time.time()  # when algorithm stats working
     # correctBoard = bruteForce(board, width, height)
@@ -585,7 +564,7 @@ def main():
     # correctBoard = generateClimbingSolutionv2(board, width, height)
     # correctBoard = generateTabuSolution(board, width, height)
     # correctBoard =  generateRandomSolution(board, width, height)
-    # correctBoard = generateSimmannealingSolution(board, width, height)
+    # correctBoard = generateAnnealingSolution(board, width, height)
     correctBoard = generateGeneticSolution(board, width, height, population_size=100, best_population_percentage=10, generations_number=10000, mutation_chance=5)
     work_time = time.time() - start_time
     board = cleanBoard.copy()
@@ -618,7 +597,7 @@ def main():
     #
     # print("Random ONE Guess :")
     # board = cleanBoard.copy()  # map we operate on
-    # print(randomiseMap(board, width, height))
+    # print(randomiseMap(board))
     # TESTING
     # test_bruteForce(testOutput, board, width, height)
     # test_generateClimbingSolution(testOutput, board, width, height)

@@ -1,2 +1,6 @@
 Kuromasu (kurodoko) to prostokątny diagram z liczbami w niektórych polach. Należy zaczernić niektóre pola diagramu tak, aby dla każdego pola liczbowego suma białych pól w tym samym wierszu i kolumnie ograniczona czarnymi polami lub brzegiem diagramu była równa wartości tej liczby. Trzeba przy tym przestrzegać zasady, że czarne pola nie mogą być połączone bokami, a wszystkie niezaczernione pola muszą tworzyć jedną spójną figurę.
 Łamigłówkę możemy traktować jako wieże szachowe. Każde pole z liczbą reprezentuje wieżę szachową, która musi atakować tyle białych pól wraz z własnym polem, jaka jest wartość liczby.
+
+
+Kuromasu (kurodoko) is a rectangular diagram with numbers in some boxes. You should blacken some fields of the diagram so that for each numerical field the sum of white fields in the same row and column limited by black fields or the border of the diagram is equal to the value of this number. You have to obey the rule that the black squares cannot be connected by the sides, and all non-blackened squares must form one coherent figure.
+We can treat the puzzle as chess towers. Each square with a number represents a chess rook that must attack as many white squares and its own square as the value of the number.
