@@ -8,7 +8,7 @@ mapsFolder = "maps/"  # folder with maps to read from
 
 
 def main():
-    filename = "1.txt"
+    filename = "9.txt"
     mapOutput = "output.txt"
     testOutput = "test_output.txt"
 
@@ -23,13 +23,13 @@ def main():
     width = auxiliary.getMapSizes(mapName)[1]
 
     start_time = time.time()  # when algorithm stats working
+    # correctBoard = randomsolution.generateRandomSolution(board, width, height)
     # correctBoard = bruteforce.bruteForce(board, width, height)
     # correctBoard = climbingv1.generateClimbingSolution(board, width, height)
     # correctBoard = climbingv2.generateClimbingSolutionv2(board, width, height)
     # correctBoard = tabu.generateTabuSolution(board, width, height)
-    # correctBoard = randomsolution.generateRandomSolution(board, width, height)
     # correctBoard = annealing.generateAnnealingSolution(board, width, height)
-    correctBoard = genetic.generateGeneticSolution(board, width, height, population_size=100, best_population_percentage=10, generations_number=10000, mutation_chance=5)
+    # correctBoard = genetic.generateGeneticSolution(board, width, height, population_size=100, best_population_percentage=10, generations_number=10000, mutation_chance=5)
     work_time = time.time() - start_time
     board = cleanBoard.copy()
 

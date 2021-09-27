@@ -19,11 +19,19 @@ def generateClimbingSolution(board, width, height):
             board = cleanBoard.copy()
             quality = rules.checkQuality(board , width, height)
         neighbour_quality = rules.checkQuality(best_neighbour, width, height)
-        if neighbour_quality < errors:
+
+        if len(best_neighbour) == 0:
+            print("ERROR: The algorithm is stuck and the last solution has so many errors: " + str(errors))
+            break
+        elif neighbour_quality < errors:
             errors = neighbour_quality
             board = best_neighbour.copy()
-        elif neighbour_quality >= errors:
+        elif neighbour_quality == errors:
+            errors = neighbour_quality
             board = best_neighbour.copy()
+            print("ERROR: The algorithm is stuck and the last solution has so many errors: " + str(errors))
+        else:
+            board = board.copy()
             print("ERROR: The algorithm is stuck and the last solution has so many errors: " + str(errors))
             break
     return board

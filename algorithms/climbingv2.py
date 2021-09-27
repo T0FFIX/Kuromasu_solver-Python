@@ -20,14 +20,18 @@ def generateClimbingSolutionv2(board, width, height):
         sorted_neighbours = []
         for i in range(0, len(best_neighbour)):
             sorted_neighbours = sortByQuality(best_neighbour, width, height)
-
         neighbour_quality = rules.checkQuality(sorted_neighbours[0], width, height)
 
         if neighbour_quality < errors:
             errors = neighbour_quality
             board = sorted_neighbours[0].copy()
-        elif neighbour_quality >= errors:
+        elif neighbour_quality == errors:
+            errors = neighbour_quality
             board = sorted_neighbours[0].copy()
+            print("ERROR: The algorithm is stuck and the last solution has so many errors: " + str(errors))
+            break
+        else:
+            board = board.copy()
             print("ERROR: The algorithm is stuck and the last solution has so many errors: " + str(errors))
             break
     return board
