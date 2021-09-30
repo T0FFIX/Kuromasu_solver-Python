@@ -1,12 +1,19 @@
 import rules
 
 
+# Climbing algorithm works as a find better solution than the staring one then go there:
+# Good site is that it is fast, and it goes consistent to the answer,
+# Bad site is that it can get stuck because if it finds a solution that is close to an answer but the next step is not
+# the answer if can not go back because it only goes forward,
+# It can get stuck in a local maximum.
+
+
 def generateClimbingSolution(board, width, height):
-    errors = rules.checkQuality(board, width, height)
+    errors = rules.checkQuality(board, width, height)  # check how many errors we got on the starting map
     while errors != 0:
-        cleanBoard = board.copy()
+        cleanBoard = board.copy()  # save the empty map
         best_neighbour = []
-        quality = 99  # error.txt indicator
+        quality = 99  # error indicator
         for i in range(0, len(board)):
             if board[i] == 0:
                 board[i] = 1

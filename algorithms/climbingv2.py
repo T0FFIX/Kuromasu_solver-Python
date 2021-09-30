@@ -6,7 +6,7 @@ def generateClimbingSolutionv2(board, width, height):
     while errors != 0:
         cleanBoard = board.copy()
         best_neighbour = []
-        quality = 99  # error.txt indicator
+        quality = 99  # error indicator
         for i in range(0, len(board)):
             if board[i] == 0:
                 board[i] = 1
