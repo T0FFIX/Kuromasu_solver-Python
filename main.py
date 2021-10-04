@@ -2,13 +2,13 @@ import visuals
 import time
 import sys
 import auxiliary
-from algorithms import bruteforce, randomsolution, climbingv1, climbingv2, tabu, annealing, genetic
+from algorithms import bruteforce, randomsolution, climbing, tabu, annealing, genetic
 
 mapsFolder = "maps/"  # folder with maps to read from
 
 
 def main():
-    filename = "3.txt"
+    filename = "11.txt"
     mapOutput = "output.txt"
     testOutput = "test_output.txt"
 
@@ -25,10 +25,10 @@ def main():
     start_time = time.time()  # when algorithm stats working
     # correctBoard = randomsolution.generateRandomSolution(board, width, height)
     # correctBoard = bruteforce.bruteForce(board, width, height)
-    correctBoard = climbingv1.generateClimbingSolution(board, width, height)
+    # correctBoard = climbingv1.generateClimbingSolution(board, width, height)
     # correctBoard = climbingv2.generateClimbingSolutionv2(board, width, height)
     # correctBoard = tabu.generateTabuSolution(board, width, height)
-    # correctBoard = annealing.generateAnnealingSolution(board, width, height)
+    correctBoard = annealing.generateAnnealingSolution(board, width, height)
     # correctBoard = genetic.generateGeneticSolution(board, width, height, population_size=100, best_population_percentage=10, generations_number=10000, mutation_chance=5)
     work_time = time.time() - start_time
     board = cleanBoard.copy()
